@@ -2,6 +2,8 @@ package ucne.edu.proyectofinalaplicada2.presentation.vehiculo
 
 sealed interface VehiculoEvent {
     data object Save : VehiculoEvent
+    data object DeleteVehiculo : VehiculoEvent
+    data class SelectedVehiculo(val id: Int) : VehiculoEvent
     data class OnchangeMarca(val marca: String) : VehiculoEvent
     data class OnchangeModelo(val modelo: String) : VehiculoEvent
     data class OnchangePrecio(val precio: Int) : VehiculoEvent
