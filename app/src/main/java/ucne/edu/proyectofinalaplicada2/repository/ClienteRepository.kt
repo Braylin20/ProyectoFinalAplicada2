@@ -47,4 +47,15 @@ class ClienteRepository @Inject constructor(
         }
     }
 
+    fun findCliente(id: Int): Flow<Resource<ClienteDto>> = flow {
+        try {
+            emit(Resource.Loading())
+            val cliente = rentCarRemoteDataSource.getCliente(id)
+            emit(Resource.Success(cliente))
+        } catch (e: HttpException) {
+            emit(Resource.Error("Error de internet ${e.message}"))
+        } catch (e: Exception) {
+            emit(Resource.Error("Error desconocido ${e.message}"))
+        }
+    }
 }
