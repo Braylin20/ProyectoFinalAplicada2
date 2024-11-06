@@ -48,4 +48,27 @@ class VehiculoRepository @Inject constructor(
         }
     }
 
+    fun findVehiculo(id: Int): Flow<Resource<VehiculoDto>> = flow {
+        try {
+            emit(Resource.Loading())
+            val vehiculo = rentCarRemoteDataSource.getVehiculo(id)
+            emit(Resource.Success(vehiculo))
+        } catch (e: HttpException) {
+            emit(Resource.Error("Error de internet ${e.message}"))
+        } catch (e: Exception) {
+            emit(Resource.Error("Error desconocido ${e.message}"))
+        }
+    }
+
+    fun deleteVehiculo(id: Int): Flow<Resource<Unit>> = flow {
+        try {
+            emit(Resource.Loading())
+            rentCarRemoteDataSource.deleteVehiculo(id)
+            emit(Resource.Success(Unit))
+        } catch (e: HttpException) {
+            emit(Resource.Error("Error de internet ${e.message}"))
+        } catch (e: Exception) {
+            emit(Resource.Error("Error desconocido ${e.message}"))
+        }
+    }
 }
