@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ucne.edu.proyectofinalaplicada2.repository.ClienteRepository
@@ -58,7 +59,11 @@ class ClienteViewModel @Inject constructor(
 
     private fun save() {
         viewModelScope.launch {
-            val cliente = clienteRepository.addCliente(uistate.value.toEntity())
+            val cliente = if (_uistate.value.clienteId != null && _uistate.value.clienteId != 0){
+                clienteRepository.updateCliente(_uistate.value.clienteId!!, uistate.value.toEntity())
+            }else{
+                clienteRepository.addCliente(uistate.value.toEntity())
+            }
             cliente.collect { result ->
                 when (result){
                     is Resource.Error -> {
@@ -88,35 +93,31 @@ class ClienteViewModel @Inject constructor(
         }
     }
 
-    private fun update(id: Int) {
+    fun selectedClient(id: Int){
         viewModelScope.launch {
-
-            val cliente =
-                clienteRepository.updateCliente(id, uistate.value.toEntity())
-
-            cliente.collect { result ->
-                when (result) {
+            clienteRepository.findCliente(id).collectLatest { result->
+                when(result){
+                    is Resource.Loading ->{
+                        _uistate.update {
+                            it.copy(isLoading = true)
+                        }
+                    }
+                    is Resource.Success -> {
+                        _uistate.update {
+                            it.copy(
+                                clienteId = result.data?.clienteId,
+                                cedula = result.data?.cedula ?: "",
+                                nombre = result.data?.nombre ?: "",
+                                apellidos = result.data?.apellidos ?: "",
+                                direccion = result.data?.direccion ?: "",
+                                celular = result.data?.celular ?: "",
+                            )
+                        }
+                    }
                     is Resource.Error -> {
                         _uistate.update {
                             it.copy(
-                                error = result.message ?: "Error"
-                            )
-                        }
-                    }
-
-                    is Resource.Loading -> {
-                        _uistate.update {
-                            it.copy(
-                                isLoading = true
-                            )
-                        }
-
-                    }
-
-                    is Resource.Success ->{
-                        _uistate.update {
-                            it.copy(
-                                success = "Cliente actualizado"
+                                error = result.message ?: "Error desconocido"
                             )
                         }
                     }
@@ -124,6 +125,7 @@ class ClienteViewModel @Inject constructor(
             }
         }
     }
+
     private fun nuevo() {
         _uistate.update {
             it.copy(
@@ -138,8 +140,6 @@ class ClienteViewModel @Inject constructor(
             )
         }
     }
-
-
 
     private fun onChangeCedula(cedula: String) {
         _uistate.update {
@@ -187,8 +187,8 @@ class ClienteViewModel @Inject constructor(
             is ClienteEvent.OnchangeCelular -> onChangeCelular(event.celular)
             is ClienteEvent.OnchangeDireccion -> onChangeDireccion(event.direccion)
             is ClienteEvent.OnchangeNombre -> onChangeNombre(event.nombre)
+            is ClienteEvent.selectedClient -> selectedClient(event.id)
             ClienteEvent.Save -> save()
-            ClienteEvent.Update -> TODO()
         }
     }
 }
