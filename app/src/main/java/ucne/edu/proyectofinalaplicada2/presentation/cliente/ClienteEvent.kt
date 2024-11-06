@@ -2,7 +2,7 @@ package ucne.edu.proyectofinalaplicada2.presentation.cliente
 
 sealed interface ClienteEvent {
     data object Save : ClienteEvent
-    data object Update : ClienteEvent
+    data class selectedClient(val id: Int) : ClienteEvent
     data class OnchangeCedula(val cedula: String) : ClienteEvent
     data class OnchangeNombre(val nombre: String) : ClienteEvent
     data class OnchangeApellidos(val apellidos: String) : ClienteEvent
