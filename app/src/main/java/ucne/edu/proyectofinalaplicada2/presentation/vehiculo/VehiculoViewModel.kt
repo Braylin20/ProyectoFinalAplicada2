@@ -14,7 +14,7 @@ import javax.inject.Inject
 @HiltViewModel
 class VehiculoViewModel @Inject constructor(
     private val vehiculoRepository: VehiculoRepository
-): ViewModel() {
+) : ViewModel() {
     private val _uistate = MutableStateFlow(Uistate())
     val uistate = _uistate.asStateFlow()
 
@@ -23,7 +23,7 @@ class VehiculoViewModel @Inject constructor(
         getVehiculos()
     }
 
-    private fun getVehiculos(){
+    private fun getVehiculos() {
         viewModelScope.launch {
             vehiculoRepository.getVehiculos().collect { result ->
 
@@ -43,6 +43,7 @@ class VehiculoViewModel @Inject constructor(
                             )
                         }
                     }
+
                     is Resource.Success -> {
                         _uistate.update {
                             it.copy(
@@ -55,10 +56,17 @@ class VehiculoViewModel @Inject constructor(
         }
     }
 
-    private fun save(){
+    private fun save() {
         viewModelScope.launch {
-            val vehiculo = vehiculoRepository.addVehiculo(uistate.value.toEntity())
-
+            val vehiculo =
+                if (_uistate.value.vehiculoId != null && _uistate.value.vehiculoId != 0) {
+                    vehiculoRepository.updateVehiculo(
+                        _uistate.value.vehiculoId!!,
+                        uistate.value.toEntity()
+                    )
+                } else {
+                    vehiculoRepository.addVehiculo(uistate.value.toEntity())
+                }
             vehiculo.collect { result ->
                 when (result) {
                     is Resource.Error -> {
@@ -68,6 +76,7 @@ class VehiculoViewModel @Inject constructor(
                             )
                         }
                     }
+
                     is Resource.Loading -> {
                         _uistate.update {
                             it.copy(
@@ -75,6 +84,7 @@ class VehiculoViewModel @Inject constructor(
                             )
                         }
                     }
+
                     is Resource.Success -> {
                         _uistate.update {
                             it.copy(
@@ -87,50 +97,68 @@ class VehiculoViewModel @Inject constructor(
         }
     }
 
-    private fun onChangeMarca(marca: String){
-        _uistate.update {
-            it.copy(
-                marca = marca
-            )
+    private fun selectedVehiculo(id: Int) {
+        viewModelScope.launch {
+            vehiculoRepository.findVehiculo(id).collect { result ->
+                when (result) {
+                    is Resource.Error -> {
+                        _uistate.update {
+                            it.copy(
+                                error = result.message ?: "Error desconocido"
+                            )
+                        }
+                    }
+
+                    is Resource.Loading -> {
+                        _uistate.update {
+                            it.copy(isLoading = true)
+                        }
+                    }
+
+                    is Resource.Success -> {
+                        _uistate.update {
+                            it.copy(
+                                vehiculoId = result.data?.vehiculoId,
+                                tipoCombustibleId = result.data?.tipoCombustibleId,
+                                tipoVehiculoId = result.data?.tipoVehiculoId,
+                                marca = result.data?.marca ?: "",
+                                modelo = result.data?.modelo ?: "",
+                                precio = result.data?.precio ?: 0,
+                                descripcion = result.data?.descripcion ?: "",
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
-    private fun onChangeModelo(modelo: String){
-        _uistate.update {
-            it.copy(
-                modelo = modelo
-                )
-        }
-    }
+    private fun deleteVehiculo() {
+        viewModelScope.launch {
+            vehiculoRepository.deleteVehiculo(uistate.value.vehiculoId!!).collect { result ->
+                when (result) {
+                    is Resource.Error -> {
+                        _uistate.update {
+                            it.copy(
+                                error = result.message ?: "Error desconocido"
+                            )
+                        }
+                    }
+                    is Resource.Loading -> {
+                        _uistate.update {
+                            it.copy(isLoading = true)
+                        }
+                    }
+                    is Resource.Success -> {
+                        _uistate.update {
+                            it.copy(
+                                success = "Vehiculo eliminado"
+                            )
+                        }
+                    }
+                }
 
-    private fun onChangePrecio(precio: Int){
-        _uistate.update {
-            it.copy(
-                precio = precio
-            )
-        }
-    }
-
-    private fun onChangeDescripcion(descripcion: String) {
-        _uistate.update {
-            it.copy(
-                descripcion = descripcion
-            )
-        }
-    }
-    private fun onChangeTipoCombustibleId(tipoCombustibleId: Int) {
-        _uistate.update {
-            it.copy(
-                tipoCombustibleId = tipoCombustibleId
-            )
-        }
-
-    }
-    private fun onChangeTipoVehiculoId(tipoVehiculoId: Int) {
-        _uistate.update {
-            it.copy(
-                tipoVehiculoId = tipoVehiculoId
-            )
+            }
         }
     }
 
@@ -150,6 +178,56 @@ class VehiculoViewModel @Inject constructor(
         }
     }
 
+    private fun onChangeMarca(marca: String) {
+        _uistate.update {
+            it.copy(
+                marca = marca
+            )
+        }
+    }
+
+    private fun onChangeModelo(modelo: String) {
+        _uistate.update {
+            it.copy(
+                modelo = modelo
+            )
+        }
+    }
+
+    private fun onChangePrecio(precio: Int) {
+        _uistate.update {
+            it.copy(
+                precio = precio
+            )
+        }
+    }
+
+    private fun onChangeDescripcion(descripcion: String) {
+        _uistate.update {
+            it.copy(
+                descripcion = descripcion
+            )
+        }
+    }
+
+    private fun onChangeTipoCombustibleId(tipoCombustibleId: Int) {
+        _uistate.update {
+            it.copy(
+                tipoCombustibleId = tipoCombustibleId
+            )
+        }
+
+    }
+
+    private fun onChangeTipoVehiculoId(tipoVehiculoId: Int) {
+        _uistate.update {
+            it.copy(
+                tipoVehiculoId = tipoVehiculoId
+            )
+        }
+    }
+
+
     fun onEvent(event: VehiculoEvent) {
         when (event) {
             is VehiculoEvent.OnchangeDescripcion -> onChangeDescripcion(event.descripcion)
@@ -158,6 +236,8 @@ class VehiculoViewModel @Inject constructor(
             is VehiculoEvent.OnchangePrecio -> onChangePrecio(event.precio)
             is VehiculoEvent.OnchangeTipoCombustibleId -> onChangeTipoCombustibleId(event.tipoCombustibleId)
             is VehiculoEvent.OnchangeTipoVehiculoId -> onChangeTipoVehiculoId(event.tipoVehiculoId)
+            is VehiculoEvent.SelectedVehiculo -> selectedVehiculo(event.id)
+            VehiculoEvent.DeleteVehiculo -> deleteVehiculo()
             VehiculoEvent.Save -> save()
         }
     }
