@@ -19,7 +19,7 @@ class RentaViewModel @Inject constructor(
     val uistate = _uistate.asStateFlow()
 
     init {
-
+        getRentas()
     }
 
     private fun getRentas() {
@@ -57,7 +57,11 @@ class RentaViewModel @Inject constructor(
 
     private fun save() {
         viewModelScope.launch {
-            val renta = rentaRepository.addRenta(uistate.value.toEntity())
+            val renta = if (_uistate.value.rentaId != null && _uistate.value.rentaId != 0) {
+                rentaRepository.updateRenta(_uistate.value.rentaId!!, uistate.value.toEntity())
+            } else {
+                rentaRepository.addRenta(uistate.value.toEntity())
+            }
             renta.collect { result ->
                 when (result) {
                     is Resource.Error -> {
@@ -100,6 +104,39 @@ class RentaViewModel @Inject constructor(
                 success = "",
                 error = "",
             )
+        }
+    }
+
+    private fun selectedRenta(id: Int) {
+        viewModelScope.launch {
+            rentaRepository.findRenta(id).collect { result ->
+                when (result) {
+                    is Resource.Error -> {
+                        _uistate.update {
+                            it.copy(
+                                error = result.message ?: "Error desconocido"
+                            )
+                        }
+                    }
+                    is Resource.Loading -> {
+                        _uistate.update {
+                            it.copy(isLoading = true)
+                        }
+                    }
+                    is Resource.Success -> {
+                        _uistate.update {
+                            it.copy(
+                                rentaId = result.data?.rentaId,
+                                clienteId = result.data?.clienteId,
+                                vehiculoId = result.data?.vehiculoId,
+                                fechaRenta = result.data?.fechaRenta,
+                                fechaEntrega = result.data?.fechaEntrega,
+                                total = result.data?.total,
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -150,6 +187,7 @@ class RentaViewModel @Inject constructor(
             is RentaEvent.OnchangeFechaRenta -> onChangeFechaRenta(event.fechaRenta)
             is RentaEvent.OnchangeTotal -> onChangeTotal(event.total)
             is RentaEvent.OnchangeVehiculoId -> onChangeVehiculoId(event.vehiculoId)
+            is RentaEvent.selectedRenta -> selectedRenta(event.id)
             RentaEvent.Save -> save()
         }
     }
