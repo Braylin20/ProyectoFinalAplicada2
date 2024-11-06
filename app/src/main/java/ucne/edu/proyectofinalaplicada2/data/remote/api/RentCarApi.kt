@@ -1,6 +1,7 @@
 package ucne.edu.proyectofinalaplicada2.data.remote.api
 
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -11,6 +12,9 @@ import ucne.edu.proyectofinalaplicada2.data.remote.dto.VehiculoDto
 
 interface RentCarApi {
     // clientes
+
+    @GET("api/Clientes/{id}")
+    suspend fun getCliente(@Path("id") id: Int): ClienteDto
     @GET("api/Clientes")
     suspend fun getClientes(): List<ClienteDto>
     @POST("api/Clientes")
@@ -19,6 +23,8 @@ interface RentCarApi {
     suspend fun updateCliente(@Path ("id") id: Int ,@Body clienteDto: ClienteDto): ClienteDto
 
     // rentas
+    @GET("api/Rentas/{id}")
+    suspend fun getRenta(@Path("id") id: Int): RentaDto
     @GET("api/Rentas")
     suspend fun getRentas(): List<RentaDto>
     @POST("api/Rentas")
@@ -27,12 +33,16 @@ interface RentCarApi {
     suspend fun updateRenta(@Path ("id") id: Int ,@Body rentaDto: RentaDto): RentaDto
 
     // vehiculos
+    @GET("api/Vehiculos/{id}")
+    suspend fun getVehiculo(@Path("id") id: Int): VehiculoDto
     @GET("api/Vehiculos")
     suspend fun getVehiculos(): List<VehiculoDto>
     @POST("api/Vehiculos")
     suspend fun addVehiculo(@Body vehiculoDto: VehiculoDto): VehiculoDto
     @PUT("api/Vehiculos/{id}")
     suspend fun updateVehiculo(@Path ("id") id: Int ,@Body vehiculoDto: VehiculoDto): VehiculoDto
+    @DELETE("api/Vehiculos/{id}")
+    suspend fun deleteVehiculo(@Path("id") id: Int)
 
 
 
