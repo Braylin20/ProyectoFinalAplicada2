@@ -116,8 +116,7 @@ class VehiculoViewModel @Inject constructor(
 
     private fun filterVehiculos(query: String) {
         _uistate.update { state ->
-
-            val filteredList = state.filteredVehiculoConMarcas.filter { vehiculo ->
+            val filteredList = state.vehiculoConMarcas.filter { vehiculo ->
                 val marca = vehiculo.nombreMarca?.contains(query, ignoreCase = true) ?: false
                 val modelo = vehiculo.nombreModelo?.contains(query, ignoreCase = true) ?: false
                 marca || modelo
@@ -127,7 +126,8 @@ class VehiculoViewModel @Inject constructor(
                     filteredListIsEmpty = true,
                     searchQuery = query,
                 )
-            } else {
+            }
+            else {
                 state.copy(
                     filteredListIsEmpty = false,
                     searchQuery = query,

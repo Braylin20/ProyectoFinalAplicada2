@@ -1,5 +1,7 @@
 package ucne.edu.proyectofinalaplicada2.presentation.authentication
 
+import android.content.Context
+import androidx.credentials.CredentialManager
 
 
 sealed interface AuthEvent {
@@ -8,7 +10,7 @@ sealed interface AuthEvent {
     data object Login : AuthEvent
     data object Signup : AuthEvent
     data object Signout : AuthEvent
-    data object SignInWithGoogle : AuthEvent
+    data class SignInWithGoogle(val googleAuthClient: GoogleAuthClient, val credentialManager: CredentialManager, val context: Context) : AuthEvent
     data class OnchangeCedula(val cedula: String) : AuthEvent
     data class OnchangeNombre(val nombre: String) : AuthEvent
     data class OnchangeApellidos(val apellidos: String) : AuthEvent

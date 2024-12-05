@@ -1,26 +1,26 @@
 package ucne.edu.proyectofinalaplicada2.presentation.authentication
 
 import android.content.Context
+import androidx.compose.ui.platform.LocalContext
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
+import androidx.lifecycle.ViewModel
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 
-class GoogleAuthClient @Inject constructor(
-    @ApplicationContext private val context: Context,
-
-    )  {
-    private val credentialManager = CredentialManager.create(context)
+class GoogleAuthClient @Inject constructor() {
+//    private val credentialManager = CredentialManager.create(LocalContext.current)
     private val firebaseAuth = FirebaseAuth.getInstance()
 
     private fun isSignedIn(): Boolean {
@@ -54,13 +54,13 @@ class GoogleAuthClient @Inject constructor(
         }
     }
 
-    suspend fun signInAndGetUser(): FirebaseUser? {
+    suspend fun signInAndGetUser( credentialManager: CredentialManager ,context: Context): FirebaseUser? {
         if (isSignedIn()) {
             return firebaseAuth.currentUser
         }
 
         return try {
-            val result = buildCredentialReqquest()
+            val result = buildCredentialReqquest(credentialManager, context)
             val isSignInSuccessful = handleSignIn(result)
             if (isSignInSuccessful) {
                 firebaseAuth.currentUser
@@ -73,7 +73,7 @@ class GoogleAuthClient @Inject constructor(
         }
     }
 
-    private suspend fun buildCredentialReqquest(): GetCredentialResponse {
+    private suspend fun buildCredentialReqquest( credentialManager: CredentialManager,context: Context): GetCredentialResponse {
         val request = GetCredentialRequest.Builder()
             .addCredentialOption(
                 GetGoogleIdOption.Builder()

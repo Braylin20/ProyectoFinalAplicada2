@@ -1,5 +1,8 @@
 package ucne.edu.proyectofinalaplicada2.presentation.authentication
 
+import android.content.Context
+import androidx.credentials.CredentialManager
+
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -71,10 +74,10 @@ class AuthViewModel @Inject constructor(
 
     private fun loadUserRole() {
         viewModelScope.launch {
+            _isRoleVerified.value = false
             val (_, role) = getUserData()
             _uistate.update { it.copy(isDataLoaded = true, isAdmin = role ?: false) }
             _isRoleVerified.value = true
-
         }
     }
     private suspend fun getUserData(): Pair<String?, Boolean?> {
@@ -85,18 +88,17 @@ class AuthViewModel @Inject constructor(
         }.firstOrNull() ?: Pair(null, null)
     }
 
-    private fun signInWithGoogle() {
+    private fun signInWithGoogle(googleAuthClient: GoogleAuthClient, credentialManager: CredentialManager, context: Context) {
         viewModelScope.launch {
             _uistate.update { it.copy(isLoading = true) }
+            _isRoleVerified.value = false
+            val user = googleAuthClient.signInAndGetUser(credentialManager,context)
+            val isAdmin = isAdminUser(user?.email ?: "")
+            async { saveUserData(user?.email ?: "", isAdmin) }.await()
 
             try {
-
-                _isRoleVerified.value = false
-                val user = googleAuthClient.signInAndGetUser()
-                handleUserSignIn(user)
-                val isAdmin = isAdminUser(user?.email ?: "")
                 if (user != null) {
-                    async { saveUserData(user.email ?: "", isAdmin) }.await()
+                    handleUserSignIn(user)
                 } else {
                     _uistate.update {
                         it.copy(
@@ -540,7 +542,7 @@ class AuthViewModel @Inject constructor(
             is AuthEvent.OnChangeEmail -> onEmailChanged(event.email)
             is AuthEvent.OnChangePassword -> onPasswordChanged(event.password)
 
-            AuthEvent.SignInWithGoogle -> signInWithGoogle()
+            is AuthEvent.SignInWithGoogle -> signInWithGoogle(event.googleAuthClient, event.credentialManager, event.context)
             is AuthEvent.OnchangeApellidos -> onChangeApellidos(event.apellidos)
             is AuthEvent.OnchangeCedula -> onChangeCedula(event.cedula)
             is AuthEvent.OnchangeCelular -> onChangeCelular(event.celular)

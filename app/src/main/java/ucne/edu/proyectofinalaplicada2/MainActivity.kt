@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import ucne.edu.proyectofinalaplicada2.notificaciones.createNotificationChannel
 import ucne.edu.proyectofinalaplicada2.notificaciones.showNotification
+import ucne.edu.proyectofinalaplicada2.presentation.authentication.GoogleAuthClient
 import ucne.edu.proyectofinalaplicada2.presentation.navigation.RentCarNavHost
 import ucne.edu.proyectofinalaplicada2.ui.theme.ProyectoFinalAplicada2Theme
 

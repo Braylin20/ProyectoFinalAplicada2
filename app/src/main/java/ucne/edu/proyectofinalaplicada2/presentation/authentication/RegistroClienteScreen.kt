@@ -257,7 +257,7 @@ fun PhoneInputField(
             }
         },
         visualTransformation = PhoneNumberVisualTransformation(),
-        label = { Text("Número de Teléfono", color = Gradiend) },
+        label = { Text("Número de Teléfono", color = Color.White) },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
             imeAction = ImeAction.Done
@@ -306,7 +306,7 @@ fun CedulaInputField(
             }
         },
         visualTransformation = CedulaVisualTransformation(),
-        label = { Text("Cédula", color = Gradiend) },
+        label = { Text("Cédula", color = Color.White) },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
             imeAction = ImeAction.Done

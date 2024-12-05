@@ -40,11 +40,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.credentials.CredentialManager
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import ucne.edu.proyectofinalaplicada2.R
@@ -56,6 +58,11 @@ fun LoginScreen(
     viewModel: AuthViewModel = hiltViewModel(),
     onNavigationLogin: () -> Unit,
 ) {
+
+    val context = LocalContext.current
+    val googleAuthClient = remember { GoogleAuthClient() }
+    val credentialManager = CredentialManager.create(LocalContext.current)
+
     val uiState by viewModel.uistate.collectAsState()
     val scope = rememberCoroutineScope()
     val onEvent: (AuthEvent) -> Unit = { event: AuthEvent ->
@@ -155,7 +162,7 @@ fun LoginScreen(
             OutlinedButton(
                 onClick = {
                     scope.launch {
-                        onEvent(AuthEvent.SignInWithGoogle)
+                        onEvent(AuthEvent.SignInWithGoogle(googleAuthClient, credentialManager, context))
                     }
                 },
                 modifier = Modifier

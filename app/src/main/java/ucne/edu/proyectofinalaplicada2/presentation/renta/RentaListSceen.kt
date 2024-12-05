@@ -89,7 +89,8 @@ fun RentaListBodySceen(
         ) {
             CircularProgressIndicator()
         }
-    }else if(uiState.rentaConVehiculos.isEmpty()){
+    }
+    else if(uiState.rentaConVehiculos.isEmpty()){
         Box(
             modifier = Modifier
                 .fillMaxSize(),

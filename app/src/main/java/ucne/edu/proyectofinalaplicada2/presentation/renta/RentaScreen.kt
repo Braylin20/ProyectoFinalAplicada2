@@ -97,9 +97,18 @@ fun RentaBodyScreen(
 ) {
     val vehiculo = vehiculoUiState.vehiculos.find { it.vehiculoId == vehiculoId }
     var showDatePickerEntrega by remember { mutableStateOf(false) }
+    var showDatePickerRenta by remember { mutableStateOf(false) }
     val datePickerStateEntrega = rememberDatePickerState()
+    val datePickerStateRenta = rememberDatePickerState()
     val emailCliente = FirebaseAuth.getInstance().currentUser?.email
 
+    LaunchedEffect( datePickerStateRenta.selectedDateMillis) {
+        val rentateMillis = datePickerStateRenta.selectedDateMillis
+        if (rentateMillis != null) {
+            onEvent(RentaEvent.HandleDatePickerResult(rentateMillis, isStartDate = true))
+            showDatePickerRenta = false
+        }
+    }
     LaunchedEffect( datePickerStateEntrega.selectedDateMillis) {
         val entregaDateMillis = datePickerStateEntrega.selectedDateMillis
         if (entregaDateMillis != null) {
@@ -235,7 +244,7 @@ fun RentaBodyScreen(
                                 onValueChange = {onEvent(RentaEvent.OnchangeFechaRenta(it))},
                                 label = { Text("Renta") },
                                 trailingIcon = {
-                                    IconButton(onClick = {  }) {
+                                    IconButton(onClick = {  showDatePickerRenta = !showDatePickerRenta  }) {
                                         Icon(
                                             Icons.Default.DateRange,
                                             contentDescription = "Select date"
@@ -245,22 +254,13 @@ fun RentaBodyScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 readOnly = true
                             )
-                            rentaUiState.errorFechaRenta?.let { error ->
-                                Text(
-                                    text = error,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                            if (showDatePickerRenta) {
+                                DatePickerPopup(
+                                    onDismissRequest = { showDatePickerRenta = false },
+                                    state = datePickerStateRenta
                                 )
                             }
-                            rentaUiState.error?.let { error ->
-                                Text(
-                                    text = error,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-                                )
-                            }
+
 
                         }
 
