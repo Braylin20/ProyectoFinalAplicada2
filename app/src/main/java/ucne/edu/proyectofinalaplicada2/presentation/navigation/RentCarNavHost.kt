@@ -6,17 +6,25 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
+import ucne.edu.proyectofinalaplicada2.presentation.authentication.AuthViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnrememberedMutableState")
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun RentCarNavHost(
     navHostController: NavHostController,
+    viewlModel: AuthViewModel = hiltViewModel()
 ) {
+
+    val uiState by viewlModel.uistate.collectAsStateWithLifecycle()
+    val isRoleVerified by viewlModel.isRoleVerified.collectAsStateWithLifecycle()
 
     val firebaseAuth = FirebaseAuth.getInstance()
     val currentUser = remember { mutableStateOf(firebaseAuth.currentUser) }
@@ -32,7 +40,7 @@ fun RentCarNavHost(
         }
     }
 
-    if (isAuthenticated.value) {
+    if (isRoleVerified && isAuthenticated.value) {
         MainNavHost(navHostController)
     } else {
         AuthNavHost(navHostController)

@@ -94,6 +94,7 @@ class AuthViewModel @Inject constructor(
             _isRoleVerified.value = false
             val user = googleAuthClient.signInAndGetUser(credentialManager,context)
             val isAdmin = isAdminUser(user?.email ?: "")
+            handleUserSignIn(user)
             async { saveUserData(user?.email ?: "", isAdmin) }.await()
 
             try {
